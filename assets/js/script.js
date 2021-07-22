@@ -5,6 +5,7 @@ const APIKey = "89b52cb1c296e2d8fed4b1b377ceb088";
 const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}@2x.png";
 
 let searchHistoryList = $("#search-history");
+let currentWeatherEl = $("#current-weather");
 
 function generateSearchHistoryBtns() {
 	searchHistoryList.append(
@@ -101,7 +102,9 @@ function queryForecastWeather(cityName, latitude, longitude) {
 			console.log(oneCallWeather);
 
 			// TODO: Set the current city Name, Lat & Lon into localStorage to be recalled later.
-			// TODO: Update the UI with weather information.
+
+			// Update the UI with current weather and forecast.
+			displayWeather(oneCallWeather);
 		})
 		.catch(error => {
 			console.error(
@@ -109,6 +112,33 @@ function queryForecastWeather(cityName, latitude, longitude) {
 				error
 			);
 		});
+}
+
+function displayWeather(oneCallWeather) {
+	// Update the current weather
+	currentWeatherEl.append(
+		$("<li>").append(
+			$("<h2>")
+				.text(`${oneCallWeather.Today.Name} (${oneCallWeather.Today.Date})`)
+				.attr("style", "font-weight: bold")
+		)
+	);
+	currentWeatherEl.append(
+		$("<li>").text(`Temp: ${oneCallWeather.Today.Temperature} \u00B0F`)
+	);
+	currentWeatherEl.append(
+		$("<li>").text(`Wind: ${oneCallWeather.Today.Wind} MPH`)
+	);
+	currentWeatherEl.append(
+		$("<li>").text(`Humidity: ${oneCallWeather.Today.Humidity} %`)
+	);
+	currentWeatherEl.append(
+		$("<li>").html(
+			`UV Index: <span class="uv-index">${oneCallWeather.Today.UVIndex}</span>`
+		)
+	);
+
+	// Update the 5-day forecast.
 }
 
 generateSearchHistoryBtns();

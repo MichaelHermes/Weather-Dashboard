@@ -6,7 +6,13 @@ const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}@2x.png";
 
 let searchHistoryList = $("#search-history");
 
-function generateSearchHistoryBtns() {
+function initialize() {
+	queryCurrentWeather("Seattle");
+	generateSearchHistoryItems();
+}
+
+function generateSearchHistoryItems() {
+	// TODO: Retrieve search history from localStorage and create the necessary search items.
 	// searchHistoryList.append(
 	// 	$("<li>").text("Austin").addClass("btn w-100 mb-2 city-btn")
 	// );
@@ -33,7 +39,8 @@ function searchCityWeather(event) {
 		return;
 	}
 
-	cityInputEl.textContent = "";
+	// Clear the input after "Search" is clicked.
+	cityInputEl.val("");
 
 	queryCurrentWeather(cityInputVal);
 }
@@ -103,7 +110,7 @@ function queryForecastWeather(cityName, latitude, longitude) {
 			}
 			console.log(oneCallWeather);
 
-			// TODO: Set the current city Name, Lat & Lon into localStorage to be recalled later.
+			// Set the current city Name, Lat & Lon into localStorage to be recalled later.
 			updateSearchHistory({
 				Name: oneCallWeather.Today.Name,
 				Latitude: latitude,
@@ -176,7 +183,7 @@ function displayWeather(oneCallWeather) {
 	}
 }
 
-generateSearchHistoryBtns();
+initialize();
 
 $("#city-search-form").on("submit", searchCityWeather);
 

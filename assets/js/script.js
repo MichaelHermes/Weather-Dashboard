@@ -47,8 +47,61 @@ function queryCurrentWeather(cityInputVal) {
 		})
 		.then(data => {
 			console.log(data);
+			queryForecastWeather(data.name, data.coord.lat, data.coord.lon);
+		})
+		.catch(error => {
+			console.error(
+				"There has been a problem with the fetch operation: ",
+				error
+			);
+		});
+}
 
-			// TODO: Use the Latitude/Longitude data values to query the daily weather forecast.
+function queryForecastWeather(cityName, latitude, longitude) {
+	let requestQueryURL = `${oneCallAPIRequestUrl}?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly,alerts&appid=${APIKey}&units=imperial`;
+	let oneCallWeather;
+
+	fetch(requestQueryURL)
+		.then(response => {
+			if (!response.ok) {
+				throw new Error("Network response was not ok");
+			}
+			return response.json();
+		})
+		.then(data => {
+			console.log(data);
+			oneCallWeather = {
+				Today: {
+					Name: cityName,
+					Date: moment.unix(data.current.dt).format("M/D/YYYY"),
+					IconUrl: weatherIconUrl.replace(
+						"{icon}",
+						data.current.weather[0].icon
+					),
+					Temperature: data.current.temp,
+					Wind: data.current.wind_speed,
+					Humidity: data.current.humidity,
+					UVIndex: data.current.uvi,
+				},
+				Forecast: [],
+			};
+			for (let index = 1; index < 6; index++) {
+				let dailyForecast = {
+					Date: moment.unix(data.daily[index].dt).format("M/D/YYYY"),
+					IconUrl: weatherIconUrl.replace(
+						"{icon}",
+						data.daily[index].weather[0].icon
+					),
+					Temperature: data.daily[index].temp.max,
+					Wind: data.daily[index].wind_speed,
+					Humidity: data.daily[index].humidity,
+				};
+				oneCallWeather.Forecast.push(dailyForecast);
+			}
+			console.log(oneCallWeather);
+
+			// TODO: Set the current city Name, Lat & Lon into localStorage to be recalled later.
+			// TODO: Update the UI with weather information.
 		})
 		.catch(error => {
 			console.error(

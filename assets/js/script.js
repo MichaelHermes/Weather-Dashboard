@@ -3,8 +3,9 @@ const currentWeatherRequestUrl =
 const oneCallAPIRequestUrl = "https://api.openweathermap.org/data/2.5/onecall";
 const APIKey = "89b52cb1c296e2d8fed4b1b377ceb088";
 const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}.png";
+const searchHistoryStorageKey = "WeatherDashboard-SearchHistory";
 
-const testData = {
+const testWeatherData = {
 	Today: {
 		Name: "Seattle",
 		Date: "7/22/2021",
@@ -56,25 +57,28 @@ const testData = {
 let searchHistoryList = $("#search-history");
 
 function initialize() {
-	displayWeather(testData);
-	//queryCurrentWeather("Seattle");
 	generateSearchHistoryItems();
+
+	displayWeather(testWeatherData);
+	//queryCurrentWeather("Seattle");
 }
 
 function generateSearchHistoryItems() {
-	// TODO: Retrieve search history from localStorage and create the necessary search items.
-	// searchHistoryList.append(
-	// 	$("<li>").text("Austin").addClass("btn w-100 mb-2 city-btn")
-	// );
-	// searchHistoryList.append(
-	// 	$("<li>").text("Chicago").addClass("btn w-100 mb-2 city-btn")
-	// );
-	// searchHistoryList.append(
-	// 	$("<li>").text("New York").addClass("btn w-100 mb-2 city-btn")
-	// );
-	// searchHistoryList.append(
-	// 	$("<li>").text("Orlando").addClass("btn w-100 mb-2 city-btn")
-	// );
+	// Retrieve search history from localStorage and populate the search history.
+	let searchHistory = JSON.parse(localStorage.getItem(searchHistoryStorageKey));
+	if (typeof searchHistory !== "undefined" && searchHistory !== null) {
+		searchHistory.forEach(citySearch => {
+			searchHistoryList.append(
+				$("<li>")
+					.text(citySearch.Name)
+					.addClass("btn w-100 mb-2 city-btn")
+					.attr({
+						"data-latitude": citySearch.Latitude,
+						"data-longitude": citySearch.Longitude,
+					})
+			);
+		});
+	}
 }
 
 function searchCityWeather(event) {
@@ -82,16 +86,14 @@ function searchCityWeather(event) {
 
 	let cityInputEl = $("#city-input");
 	let cityInputVal = cityInputEl.val();
-
 	// Make sure they entered a city value.
 	if (!cityInputVal) {
 		alert("A city input is required!");
 		return;
 	}
-
 	// Clear the input after "Search" is clicked.
 	cityInputEl.val("");
-
+	// Kick-off the weather retrieval process using the supplied city name.
 	queryCurrentWeather(cityInputVal);
 }
 
@@ -106,7 +108,6 @@ function queryCurrentWeather(cityInputVal) {
 			return response.json();
 		})
 		.then(data => {
-			console.log(data);
 			queryForecastWeather(data.name, data.coord.lat, data.coord.lon);
 		})
 		.catch(error => {
@@ -129,7 +130,6 @@ function queryForecastWeather(cityName, latitude, longitude) {
 			return response.json();
 		})
 		.then(data => {
-			console.log(data);
 			oneCallWeather = {
 				Today: {
 					Name: cityName,
@@ -158,14 +158,9 @@ function queryForecastWeather(cityName, latitude, longitude) {
 				};
 				oneCallWeather.Forecast.push(dailyForecast);
 			}
-			console.log(oneCallWeather);
 
 			// Set the current city Name, Lat & Lon into localStorage to be recalled later.
-			updateSearchHistory({
-				Name: oneCallWeather.Today.Name,
-				Latitude: latitude,
-				Longitude: longitude,
-			});
+			updateSearchHistory(oneCallWeather.Today.Name, latitude, longitude);
 
 			// Update the UI with current weather and forecast.
 			displayWeather(oneCallWeather);
@@ -178,17 +173,35 @@ function queryForecastWeather(cityName, latitude, longitude) {
 		});
 }
 
-function updateSearchHistory(currentSearch) {
-	// Create a new search history button.
+function updateSearchHistory(name, latitude, longitude) {
+	// Prepend a new search history item to the top of the list.
 	searchHistoryList.prepend(
-		$("<li>")
-			.text(currentSearch.Name)
-			.addClass("btn w-100 mb-2 city-btn")
-			.attr("id", "city-btn")
+		$("<li>").text(name).addClass("btn w-100 mb-2 city-btn").attr({
+			"data-latitude": latitude,
+			"data-longitude": longitude,
+		})
 	);
 
 	// Persist this city search into localStorage.
-	//localStorage.setItem("weatherSearchHistory", JSON.stringify(currentSearch));
+	let searchHistory = JSON.parse(localStorage.getItem(searchHistoryStorageKey));
+	let currentCitySearch = {
+		Name: name,
+		Latitude: latitude,
+		Longitude: longitude,
+	};
+	if (typeof searchHistory === "undefined" || searchHistory === null) {
+		searchHistory = [currentCitySearch];
+	} else {
+		for (let index = 0; index < searchHistory.length; index++) {
+			// Remove any stored city searches that match the current city being searched.
+			if (searchHistory[index].Name === name) {
+				searchHistory.splice(index, 1);
+			}
+		}
+		// Add the current city search to the top of the stored searches.
+		searchHistory.unshift(currentCitySearch);
+	}
+	localStorage.setItem(searchHistoryStorageKey, JSON.stringify(searchHistory));
 }
 
 function displayWeather(oneCallWeather) {
@@ -255,8 +268,14 @@ initialize();
 
 $("#city-search-form").on("submit", searchCityWeather);
 
-// When a search history button is clicked, query the OneCall Weather API to retrieve weather data using the latitude and longitude of the selected city.
 searchHistoryList.on("click", "li", event => {
-	alert(`${event.target.textContent} Clicked!`);
-	//queryForecastWeather(cityName, latitude, longitude);
+	let searchHistoryItemClicked = $(event.target);
+	// Remove the clicked search history item. It will be added back to the top of the search history list when the 'queryForecastWeather' finishes.
+	searchHistoryItemClicked.remove();
+	// Kick-off a query to get the weather information for the requested city's Lat/lon.
+	queryForecastWeather(
+		searchHistoryItemClicked.text(),
+		searchHistoryItemClicked.attr("data-latitude"),
+		searchHistoryItemClicked.attr("data-longitude")
+	);
 });

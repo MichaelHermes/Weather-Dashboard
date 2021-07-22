@@ -37,22 +37,18 @@
       </div>
       <div class="col-9">
         <div class="container-fluid h-100">
-          <div class="row border">
-            <div>
-              <ul class="weather-list" id="current-weather"></ul>
-            </div>
+          <div class="row border border-dark">
+            <ul id="current-weather"></ul>
           </div>
           <div class="row mt-1">
-            <div>
-              <h3>5-Day Forecast:</h3>
-            </div>
+            <h3>5-Day Forecast:</h3>
           </div>
           <div class="row row-cols-6 d-flex justify-content-between">
-            <div class="col border" id="forecast-day-1"></div>
-            <div class="col border" id="forecast-day-2"></div>
-            <div class="col border" id="forecast-day-3"></div>
-            <div class="col border" id="forecast-day-4"></div>
-            <div class="col border" id="forecast-day-5"></div>
+            <div class="col forecast" data-day="1"></div>
+            <div class="col forecast" data-day="2"></div>
+            <div class="col forecast" data-day="3"></div>
+            <div class="col forecast" data-day="4"></div>
+            <div class="col forecast" data-day="5"></div>
           </div>
         </div>
       </div>

@@ -2,12 +2,62 @@ const currentWeatherRequestUrl =
 	"https://api.openweathermap.org/data/2.5/weather";
 const oneCallAPIRequestUrl = "https://api.openweathermap.org/data/2.5/onecall";
 const APIKey = "89b52cb1c296e2d8fed4b1b377ceb088";
-const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}@2x.png";
+const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}.png";
+
+const testData = {
+	Today: {
+		Name: "Seattle",
+		Date: "7/22/2021",
+		IconUrl: weatherIconUrl.replace("{icon}", "01d"),
+		Temperature: 74.01,
+		Wind: 6.67,
+		Humidity: 46,
+		UVIndex: 0.47,
+	},
+	Forecast: [
+		{
+			Date: "7/23/2021",
+			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
+			Temperature: 73.72,
+			Wind: 9.53,
+			Humidity: 66,
+		},
+		{
+			Date: "7/24/2021",
+			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
+			Temperature: 73.72,
+			Wind: 9.53,
+			Humidity: 66,
+		},
+		{
+			Date: "7/25/2021",
+			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
+			Temperature: 73.72,
+			Wind: 9.53,
+			Humidity: 66,
+		},
+		{
+			Date: "7/26/2021",
+			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
+			Temperature: 73.72,
+			Wind: 9.53,
+			Humidity: 66,
+		},
+		{
+			Date: "7/27/2021",
+			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
+			Temperature: 73.72,
+			Wind: 9.53,
+			Humidity: 66,
+		},
+	],
+};
 
 let searchHistoryList = $("#search-history");
 
 function initialize() {
-	queryCurrentWeather("Seattle");
+	displayWeather(testData);
+	//queryCurrentWeather("Seattle");
 	generateSearchHistoryItems();
 }
 
@@ -144,41 +194,59 @@ function updateSearchHistory(currentSearch) {
 function displayWeather(oneCallWeather) {
 	// Update the current weather
 	let currentWeatherEl = $("#current-weather");
-	currentWeatherEl.append(
-		$("<li>").append(
-			$("<h2>").text(
-				`${oneCallWeather.Today.Name} (${oneCallWeather.Today.Date})`
+	// Before adding the new current weather elements, remove any existing ones first.
+	currentWeatherEl.children().remove();
+	// Append the new current weather details.
+	currentWeatherEl
+		.append(
+			$("<li>").append(
+				$("<div>")
+					.append(
+						$("<h2>").text(
+							`${oneCallWeather.Today.Name} (${oneCallWeather.Today.Date})`
+						)
+					)
+					.append(
+						$("<img>").attr({
+							src: oneCallWeather.Today.IconUrl,
+							alt: "Weather Icon",
+						})
+					)
 			)
 		)
-	);
-	currentWeatherEl.append(
-		$("<li>").text(`Temp: ${oneCallWeather.Today.Temperature} \u00B0F`)
-	);
-	currentWeatherEl.append(
-		$("<li>").text(`Wind: ${oneCallWeather.Today.Wind} MPH`)
-	);
-	currentWeatherEl.append(
-		$("<li>").text(`Humidity: ${oneCallWeather.Today.Humidity} %`)
-	);
-	currentWeatherEl.append(
-		$("<li>").html(
-			`UV Index: <span class="uv-index">${oneCallWeather.Today.UVIndex}</span>`
+		.append(
+			$("<li>").html(`<b>Temp:</b> ${oneCallWeather.Today.Temperature} \u00B0F`)
 		)
-	);
+		.append($("<li>").html(`<b>Wind:</b> ${oneCallWeather.Today.Wind} MPH`))
+		.append(
+			$("<li>").html(`<b>Humidity:</b> ${oneCallWeather.Today.Humidity} %`)
+		)
+		.append(
+			$("<li>").html(
+				`<b>UV Index:</b> <span class="uv-index">${oneCallWeather.Today.UVIndex}</span>`
+			)
+		);
 
-	// Update the 5-day forecast.
+	// Update the 5-day forecast, one day at a time.
 	for (let index = 0; index < oneCallWeather.Forecast.length; index++) {
 		const dailyForecast = oneCallWeather.Forecast[index];
-		$(`#forecast-day-${index + 1}`).append(
+		const forecastEl = $(`.forecast[data-day=${index + 1}]`);
+		// Before adding any new forecast elements, remove any existing ones first.
+		forecastEl.children().remove();
+		// Append the new forecast details.
+		forecastEl.append(
 			$("<ul>")
-				.addClass("weather-list forecast-item")
-				.append($("<li>").append($("<b>").text(`${dailyForecast.Date}`)))
+				.append($("<li>").append($("<h4>").text(`${dailyForecast.Date}`)))
 				.append(
-					$("<li>").append($("<img>").attr({ src: "", alt: "Weather Icon" }))
+					$("<li>").append(
+						$("<img>").attr({ src: dailyForecast.IconUrl, alt: "Weather Icon" })
+					)
 				)
-				.append($("<li>").text(`Temp: ${dailyForecast.Temperature} \u00B0F`))
-				.append($("<li>").text(`Wind: ${dailyForecast.Wind} MPH`))
-				.append($("<li>").text(`Humidity: ${dailyForecast.Humidity} %`))
+				.append(
+					$("<li>").html(`<b>Temp:</b> ${dailyForecast.Temperature} \u00B0F`)
+				)
+				.append($("<li>").html(`<b>Wind:</b> ${dailyForecast.Wind} MPH`))
+				.append($("<li>").html(`<b>Humidity:</b> ${dailyForecast.Humidity} %`))
 		);
 	}
 }

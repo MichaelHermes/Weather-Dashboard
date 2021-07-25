@@ -279,3 +279,8 @@ searchHistoryList.on("click", "li", event => {
 		searchHistoryItemClicked.attr("data-longitude")
 	);
 });
+
+$("#clear-btn").on("click", () => {
+	localStorage.removeItem(searchHistoryStorageKey);
+	searchHistoryList.children().remove();
+});

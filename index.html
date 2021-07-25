@@ -26,10 +26,11 @@
     <div class="row">
       <div class="col-3">
         <div class="input-group mb-3">
-          <form id="city-search-form">
-            <input type="text" class="form-control" id="city-input" placeholder="Enter a city name (e.g. Seattle)"
-              aria-label="city-input" aria-describedby="button-search">
+          <form class="w-100" id="city-search-form">
+            <label for="city-input">Search for a City:</label>
+            <input type="text" class="form-control mb-2" id="city-input" placeholder="Seattle" aria-label="city-input">
             <button class="btn btn-outline-secondary" type="submit" id="search-btn">Search</button>
+            <button class="btn btn-outline-secondary" type="button" id="clear-btn">Clear History</button>
           </form>
         </div>
         <hr>

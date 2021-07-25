@@ -48,6 +48,12 @@ ul {
 	font-weight: bold;
 }
 
+#city-search-form button {
+	background-color: var(--persian-green);
+	color: var(--charcoal);
+	font-weight: bold;
+}
+
 .city-btn {
 	background-color: var(--sandy-brown);
 	color: var(--charcoal);

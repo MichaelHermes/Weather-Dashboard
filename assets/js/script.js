@@ -75,7 +75,7 @@ function queryCurrentWeather(cityInputVal) {
 }
 
 // Query the OneWeather API for daily forecast information. On success, populate the weather display on-screen.
-function queryForecastWeather(cityName, latitude, longitude, searchItem) {
+function queryForecastWeather(cityName, latitude, longitude) {
 	let requestQueryURL = `${oneCallAPIRequestUrl}?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly,alerts&appid=${APIKey}&units=imperial`;
 	let oneCallWeather;
 
@@ -120,12 +120,7 @@ function queryForecastWeather(cityName, latitude, longitude, searchItem) {
 			}
 
 			// Set the current city Name, Lat & Lon into localStorage to be recalled later.
-			updateSearchHistory(
-				oneCallWeather.Today.Name,
-				latitude,
-				longitude,
-				searchItem
-			);
+			updateSearchHistory(oneCallWeather.Today.Name, latitude, longitude);
 
 			// Update the UI with current weather and forecast.
 			displayWeather(oneCallWeather);
@@ -139,12 +134,10 @@ function queryForecastWeather(cityName, latitude, longitude, searchItem) {
 }
 
 // Updates the search history results both on-screen and in localStorage.
-function updateSearchHistory(name, latitude, longitude, searchItem) {
+function updateSearchHistory(name, latitude, longitude) {
 	if (applicationLoaded) {
-		// If this was the result of a search item being clicked, remove that search item from the list before prepending it back to the top.
-		if (searchItem) {
-			searchItem.remove();
-		}
+		// Remove any search history list items that match the current city being searched.
+		searchHistoryList.find(`.city-btn:contains("${name}")`).remove();
 
 		// Prepend a new search history item to the top of the list.
 		searchHistoryList.prepend(
@@ -251,7 +244,7 @@ function displayWeather(oneCallWeather) {
 // Click handler for search history items.
 searchHistoryList.on("click", "li", event => {
 	let itemClicked = $(event.target);
-	// Only remove the search history button and re-query the weather if a different city is selected or an item other than the top search history item is clicked.
+	// Re-query the weather if a different city is selected or an item other than the top search history item is clicked.
 	if (
 		itemClicked.text() !== searchHistoryList.children().first().text() ||
 		itemClicked.text() !== currentCity
@@ -260,8 +253,7 @@ searchHistoryList.on("click", "li", event => {
 		queryForecastWeather(
 			itemClicked.text(),
 			itemClicked.attr("data-latitude"),
-			itemClicked.attr("data-longitude"),
-			itemClicked
+			itemClicked.attr("data-longitude")
 		);
 	}
 });

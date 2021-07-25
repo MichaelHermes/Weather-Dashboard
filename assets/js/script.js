@@ -55,6 +55,7 @@ const testWeatherData = {
 };
 
 let searchHistoryList = $("#search-history");
+let currentCity;
 
 function initialize() {
 	generateSearchHistoryItems();
@@ -262,6 +263,8 @@ function displayWeather(oneCallWeather) {
 				.append($("<li>").html(`<b>Humidity:</b> ${dailyForecast.Humidity} %`))
 		);
 	}
+
+	currentCity = oneCallWeather.Today.Name;
 }
 
 initialize();
@@ -269,15 +272,23 @@ initialize();
 $("#city-search-form").on("submit", searchCityWeather);
 
 searchHistoryList.on("click", "li", event => {
-	let searchHistoryItemClicked = $(event.target);
-	// Remove the clicked search history item. It will be added back to the top of the search history list when the 'queryForecastWeather' finishes.
-	searchHistoryItemClicked.remove();
-	// Kick-off a query to get the weather information for the requested city's Lat/lon.
-	queryForecastWeather(
-		searchHistoryItemClicked.text(),
-		searchHistoryItemClicked.attr("data-latitude"),
-		searchHistoryItemClicked.attr("data-longitude")
-	);
+	let itemClicked = $(event.target);
+	// Only remove the search history button and re-query the weather if a different city is selected or an item other than the top search history item is clicked.
+	if (
+		itemClicked.text() !== searchHistoryList.children().first().text() ||
+		itemClicked.text() !== currentCity
+	) {
+		// Remove the clicked search history item. It will be added back to the top of the search history list when the 'queryForecastWeather' finishes.
+		itemClicked.remove();
+		// Kick-off a query to get the weather information for the requested city's Lat/lon.
+		queryForecastWeather(
+			itemClicked.text(),
+			itemClicked.attr("data-latitude"),
+			itemClicked.attr("data-longitude")
+		);
+	} else {
+		console.log("First item clicked!");
+	}
 });
 
 $("#clear-btn").on("click", () => {

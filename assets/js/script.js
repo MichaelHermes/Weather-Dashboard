@@ -124,7 +124,7 @@ function queryCurrentWeather(cityInputVal) {
 }
 
 // Query the OneWeather API for daily forecast information. On success, populate the weather display on-screen.
-function queryForecastWeather(cityName, latitude, longitude) {
+function queryForecastWeather(cityName, latitude, longitude, searchItem) {
 	let requestQueryURL = `${oneCallAPIRequestUrl}?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly,alerts&appid=${APIKey}&units=imperial`;
 	let oneCallWeather;
 
@@ -169,7 +169,12 @@ function queryForecastWeather(cityName, latitude, longitude) {
 			}
 
 			// Set the current city Name, Lat & Lon into localStorage to be recalled later.
-			updateSearchHistory(oneCallWeather.Today.Name, latitude, longitude);
+			updateSearchHistory(
+				oneCallWeather.Today.Name,
+				latitude,
+				longitude,
+				searchItem
+			);
 
 			// Update the UI with current weather and forecast.
 			displayWeather(oneCallWeather);
@@ -183,7 +188,12 @@ function queryForecastWeather(cityName, latitude, longitude) {
 }
 
 // Updates the search history results both on-screen and in localStorage.
-function updateSearchHistory(name, latitude, longitude) {
+function updateSearchHistory(name, latitude, longitude, searchItem) {
+	// If this was the result of a search item being clicked, remove that search item from the list before prepending it back to the top.
+	if (searchItem) {
+		searchItem.remove();
+	}
+
 	// Prepend a new search history item to the top of the list.
 	searchHistoryList.prepend(
 		$("<li>").text(name).addClass("btn w-100 mb-2 city-btn").attr({
@@ -285,16 +295,13 @@ searchHistoryList.on("click", "li", event => {
 		itemClicked.text() !== searchHistoryList.children().first().text() ||
 		itemClicked.text() !== currentCity
 	) {
-		// Remove the clicked search history item. It will be added back to the top of the search history list when the 'queryForecastWeather' finishes.
-		itemClicked.remove();
 		// Kick-off a query to get the weather information for the requested city's Lat/lon.
 		queryForecastWeather(
 			itemClicked.text(),
 			itemClicked.attr("data-latitude"),
-			itemClicked.attr("data-longitude")
+			itemClicked.attr("data-longitude"),
+			itemClicked
 		);
-	} else {
-		console.log("First item clicked!");
 	}
 });
 

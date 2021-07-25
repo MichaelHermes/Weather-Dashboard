@@ -212,6 +212,19 @@ function displayWeather(oneCallWeather) {
 			)
 		);
 
+	// Color the UV Index based on value.
+	if (oneCallWeather.Today.UVIndex <= 2) {
+		$(".uv-index").css({ "background-color": "green", color: "white" });
+	} else if (oneCallWeather.Today.UVIndex <= 5) {
+		$(".uv-index").css({ "background-color": "gold", color: "black" });
+	} else if (oneCallWeather.Today.UVIndex <= 7) {
+		$(".uv-index").css({ "background-color": "orange", color: "black" });
+	} else if (oneCallWeather.Today.UVIndex <= 10) {
+		$(".uv-index").css({ "background-color": "red", color: "white" });
+	} else {
+		$(".uv-index").css({ "background-color": "darkred", color: "white" });
+	}
+
 	// Update the 5-day forecast, one day at a time.
 	for (let index = 0; index < oneCallWeather.Forecast.length; index++) {
 		const dailyForecast = oneCallWeather.Forecast[index];

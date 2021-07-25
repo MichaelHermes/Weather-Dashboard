@@ -57,6 +57,7 @@ const testWeatherData = {
 let searchHistoryList = $("#search-history");
 let currentCity;
 
+// Initialize the application on page load. This will populate persistent search history and start off with a query for Seattle weather by default.
 function initialize() {
 	generateSearchHistoryItems();
 
@@ -64,8 +65,8 @@ function initialize() {
 	//queryCurrentWeather("Seattle");
 }
 
+// Retrieve search history from localStorage and populate the search history.
 function generateSearchHistoryItems() {
-	// Retrieve search history from localStorage and populate the search history.
 	let searchHistory = JSON.parse(localStorage.getItem(searchHistoryStorageKey));
 	if (typeof searchHistory !== "undefined" && searchHistory !== null) {
 		searchHistory.forEach(citySearch => {
@@ -82,6 +83,7 @@ function generateSearchHistoryItems() {
 	}
 }
 
+// The handler for the "Search" button. Obtains the city name input and begins the query for current weather.
 function searchCityWeather(event) {
 	event.preventDefault();
 
@@ -98,9 +100,11 @@ function searchCityWeather(event) {
 	queryCurrentWeather(cityInputVal);
 }
 
+// Query the OneWeather API for current weather in the target city. On success, follow-up with the weather forecast API query.
 function queryCurrentWeather(cityInputVal) {
 	let requestQueryURL = `${currentWeatherRequestUrl}?q=${cityInputVal}&appid=${APIKey}&units=imperial`;
 
+	// Query the API and handle the response.
 	fetch(requestQueryURL)
 		.then(response => {
 			if (!response.ok) {
@@ -119,10 +123,12 @@ function queryCurrentWeather(cityInputVal) {
 		});
 }
 
+// Query the OneWeather API for daily forecast information. On success, populate the weather display on-screen.
 function queryForecastWeather(cityName, latitude, longitude) {
 	let requestQueryURL = `${oneCallAPIRequestUrl}?lat=${latitude}&lon=${longitude}&exclude=minutely,hourly,alerts&appid=${APIKey}&units=imperial`;
 	let oneCallWeather;
 
+	// Query the API and handle the response.
 	fetch(requestQueryURL)
 		.then(response => {
 			if (!response.ok) {
@@ -131,6 +137,7 @@ function queryForecastWeather(cityName, latitude, longitude) {
 			return response.json();
 		})
 		.then(data => {
+			// Build an object that contains all the weather data necessary for display.
 			oneCallWeather = {
 				Today: {
 					Name: cityName,
@@ -146,6 +153,7 @@ function queryForecastWeather(cityName, latitude, longitude) {
 				},
 				Forecast: [],
 			};
+			// Loop through the daily results to build the forecast details.
 			for (let index = 1; index < 6; index++) {
 				let dailyForecast = {
 					Date: moment.unix(data.daily[index].dt).format("M/D/YYYY"),
@@ -174,6 +182,7 @@ function queryForecastWeather(cityName, latitude, longitude) {
 		});
 }
 
+// Updates the search history results both on-screen and in localStorage.
 function updateSearchHistory(name, latitude, longitude) {
 	// Prepend a new search history item to the top of the list.
 	searchHistoryList.prepend(
@@ -205,6 +214,7 @@ function updateSearchHistory(name, latitude, longitude) {
 	localStorage.setItem(searchHistoryStorageKey, JSON.stringify(searchHistory));
 }
 
+// Updates the UI with the weather details obtained for the target city.
 function displayWeather(oneCallWeather) {
 	// Update the current weather
 	let currentWeatherEl = $("#current-weather");
@@ -267,10 +277,7 @@ function displayWeather(oneCallWeather) {
 	currentCity = oneCallWeather.Today.Name;
 }
 
-initialize();
-
-$("#city-search-form").on("submit", searchCityWeather);
-
+// Click handler for search history items.
 searchHistoryList.on("click", "li", event => {
 	let itemClicked = $(event.target);
 	// Only remove the search history button and re-query the weather if a different city is selected or an item other than the top search history item is clicked.
@@ -291,7 +298,12 @@ searchHistoryList.on("click", "li", event => {
 	}
 });
 
+// Click handler for Clear History button.
 $("#clear-btn").on("click", () => {
 	localStorage.removeItem(searchHistoryStorageKey);
 	searchHistoryList.children().remove();
 });
+
+// Submit handler for the Search button.
+$("#city-search-form").on("submit", searchCityWeather);
+initialize();

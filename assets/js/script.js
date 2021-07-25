@@ -5,64 +5,15 @@ const APIKey = "89b52cb1c296e2d8fed4b1b377ceb088";
 const weatherIconUrl = "http://openweathermap.org/img/wn/{icon}.png";
 const searchHistoryStorageKey = "WeatherDashboard-SearchHistory";
 
-const testWeatherData = {
-	Today: {
-		Name: "Seattle",
-		Date: "7/22/2021",
-		IconUrl: weatherIconUrl.replace("{icon}", "01d"),
-		Temperature: 74.01,
-		Wind: 6.67,
-		Humidity: 46,
-		UVIndex: 0.47,
-	},
-	Forecast: [
-		{
-			Date: "7/23/2021",
-			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
-			Temperature: 73.72,
-			Wind: 9.53,
-			Humidity: 66,
-		},
-		{
-			Date: "7/24/2021",
-			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
-			Temperature: 73.72,
-			Wind: 9.53,
-			Humidity: 66,
-		},
-		{
-			Date: "7/25/2021",
-			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
-			Temperature: 73.72,
-			Wind: 9.53,
-			Humidity: 66,
-		},
-		{
-			Date: "7/26/2021",
-			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
-			Temperature: 73.72,
-			Wind: 9.53,
-			Humidity: 66,
-		},
-		{
-			Date: "7/27/2021",
-			IconUrl: weatherIconUrl.replace("{icon}", "09d"),
-			Temperature: 73.72,
-			Wind: 9.53,
-			Humidity: 66,
-		},
-	],
-};
-
 let searchHistoryList = $("#search-history");
 let currentCity;
+let applicationLoaded = false;
 
 // Initialize the application on page load. This will populate persistent search history and start off with a query for Seattle weather by default.
 function initialize() {
 	generateSearchHistoryItems();
 
-	displayWeather(testWeatherData);
-	//queryCurrentWeather("Seattle");
+	queryCurrentWeather("Seattle");
 }
 
 // Retrieve search history from localStorage and populate the search history.
@@ -189,39 +140,46 @@ function queryForecastWeather(cityName, latitude, longitude, searchItem) {
 
 // Updates the search history results both on-screen and in localStorage.
 function updateSearchHistory(name, latitude, longitude, searchItem) {
-	// If this was the result of a search item being clicked, remove that search item from the list before prepending it back to the top.
-	if (searchItem) {
-		searchItem.remove();
-	}
-
-	// Prepend a new search history item to the top of the list.
-	searchHistoryList.prepend(
-		$("<li>").text(name).addClass("btn w-100 mb-2 city-btn").attr({
-			"data-latitude": latitude,
-			"data-longitude": longitude,
-		})
-	);
-
-	// Persist this city search into localStorage.
-	let searchHistory = JSON.parse(localStorage.getItem(searchHistoryStorageKey));
-	let currentCitySearch = {
-		Name: name,
-		Latitude: latitude,
-		Longitude: longitude,
-	};
-	if (typeof searchHistory === "undefined" || searchHistory === null) {
-		searchHistory = [currentCitySearch];
-	} else {
-		for (let index = 0; index < searchHistory.length; index++) {
-			// Remove any stored city searches that match the current city being searched.
-			if (searchHistory[index].Name === name) {
-				searchHistory.splice(index, 1);
-			}
+	if (applicationLoaded) {
+		// If this was the result of a search item being clicked, remove that search item from the list before prepending it back to the top.
+		if (searchItem) {
+			searchItem.remove();
 		}
-		// Add the current city search to the top of the stored searches.
-		searchHistory.unshift(currentCitySearch);
+
+		// Prepend a new search history item to the top of the list.
+		searchHistoryList.prepend(
+			$("<li>").text(name).addClass("btn w-100 mb-2 city-btn").attr({
+				"data-latitude": latitude,
+				"data-longitude": longitude,
+			})
+		);
+
+		// Persist this city search into localStorage.
+		let searchHistory = JSON.parse(
+			localStorage.getItem(searchHistoryStorageKey)
+		);
+		let currentCitySearch = {
+			Name: name,
+			Latitude: latitude,
+			Longitude: longitude,
+		};
+		if (typeof searchHistory === "undefined" || searchHistory === null) {
+			searchHistory = [currentCitySearch];
+		} else {
+			for (let index = 0; index < searchHistory.length; index++) {
+				// Remove any stored city searches that match the current city being searched.
+				if (searchHistory[index].Name === name) {
+					searchHistory.splice(index, 1);
+				}
+			}
+			// Add the current city search to the top of the stored searches.
+			searchHistory.unshift(currentCitySearch);
+		}
+		localStorage.setItem(
+			searchHistoryStorageKey,
+			JSON.stringify(searchHistory)
+		);
 	}
-	localStorage.setItem(searchHistoryStorageKey, JSON.stringify(searchHistory));
 }
 
 // Updates the UI with the weather details obtained for the target city.
@@ -285,6 +243,9 @@ function displayWeather(oneCallWeather) {
 	}
 
 	currentCity = oneCallWeather.Today.Name;
+	if (!applicationLoaded) {
+		applicationLoaded = true;
+	}
 }
 
 // Click handler for search history items.

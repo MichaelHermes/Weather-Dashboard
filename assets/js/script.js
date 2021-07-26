@@ -42,7 +42,7 @@ function searchCityWeather(event) {
 	let cityInputVal = cityInputEl.val();
 	// Make sure they entered a city value.
 	if (!cityInputVal) {
-		alert("A city input is required!");
+		new bootstrap.Modal($("#cityInputWarning")).show();
 		return;
 	}
 	// Clear the input after "Search" is clicked.
